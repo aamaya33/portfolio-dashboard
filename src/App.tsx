@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { Bar, CartesianGrid, ComposedChart, Legend, Line, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import { Bar, CartesianGrid, Cell as Slice, ComposedChart, Legend, Line, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { parseLedger, type Ledger, type MonthRow } from './lib/ledger';
 import { categoryTotals, monthExpenses, selectRange, summarize, type Range } from './lib/metrics';
 
@@ -119,7 +119,6 @@ function Dashboard({ ledger, rows }: { ledger: Ledger; rows: MonthRow[] }) {
   const summary = summarize(rows);
   const byCategory = categoryTotals(rows, categories);
   const ranked = [...categories].sort((a, b) => byCategory[b]! - byCategory[a]!);
-  const maxCategory = Math.max(...ranked.map((c) => byCategory[c]!), 0);
 
   return (
     <>
@@ -166,6 +165,20 @@ function Dashboard({ ledger, rows }: { ledger: Ledger; rows: MonthRow[] }) {
         <div className="panel">
           <div className="panel-title">Expense share</div>
           <div className="panel-title-sub">By category, selected range</div>
+          <div className="pie">
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie data={ranked.map((c) => ({ name: c, value: byCategory[c]! }))} dataKey="value" nameKey="name" outerRadius="90%" stroke="#1B1E2E" strokeWidth={2} isAnimationActive={false}>
+                  {ranked.map((c) => <Slice key={c} fill={color(c)} />)}
+                </Pie>
+                <Tooltip
+                  contentStyle={{ background: '#1A1D2E', border: '1px solid #2A2E45', borderRadius: 10, fontSize: 12 }}
+                  itemStyle={{ color: '#A6ACC4' }}
+                  formatter={(n: number) => usd.format(n)}
+                />
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
           <ul className="share-list">
             {ranked.map((c) => (
               <li key={c}>
@@ -177,9 +190,6 @@ function Dashboard({ ledger, rows }: { ledger: Ledger; rows: MonthRow[] }) {
                       {summary.expenses ? `${Math.round((byCategory[c]! / summary.expenses) * 100)}%` : '–'}
                     </span>
                   </span>
-                </div>
-                <div className="share-track">
-                  <div className="share-bar" style={{ width: `${maxCategory ? Math.max(0, byCategory[c]! / maxCategory) * 100 : 0}%`, background: color(c) }} />
                 </div>
               </li>
             ))}

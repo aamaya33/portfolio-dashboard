@@ -168,7 +168,11 @@ function Dashboard({ ledger, rows }: { ledger: Ledger; rows: MonthRow[] }) {
           <div className="pie">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
-                <Pie data={ranked.map((c) => ({ name: c, value: byCategory[c]! }))} dataKey="value" nameKey="name" outerRadius="70%" label={({ x, y, textAnchor, percent }) => <text x={x} y={y} textAnchor={textAnchor} dominantBaseline="central" fill="#A6ACC4" fontSize={11}>{`${Math.round(percent * 100)}%`}</text>} labelLine={false} stroke="#1B1E2E" strokeWidth={2} isAnimationActive={false}>
+                <Pie data={ranked.map((c) => ({ name: c, value: byCategory[c]! }))} dataKey="value" nameKey="name" outerRadius="90%" label={({ cx, cy, midAngle, outerRadius, percent }) => {
+                  if (percent < 0.04) return null;
+                  const a = (-midAngle * Math.PI) / 180;
+                  return <text x={cx + 0.6 * outerRadius * Math.cos(a)} y={cy + 0.6 * outerRadius * Math.sin(a)} textAnchor="middle" dominantBaseline="central" fill="#fff" fontSize={12} fontWeight={600}>{`${Math.round(percent * 100)}%`}</text>;
+                }} labelLine={false} stroke="#1B1E2E" strokeWidth={2} isAnimationActive={false}>
                   {ranked.map((c) => <Slice key={c} fill={color(c)} />)}
                 </Pie>
                 <Tooltip

@@ -168,7 +168,7 @@ function Dashboard({ ledger, rows }: { ledger: Ledger; rows: MonthRow[] }) {
           <div className="pie">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
-                <Pie data={ranked.map((c) => ({ name: c, value: byCategory[c]! }))} dataKey="value" nameKey="name" outerRadius="90%" stroke="#1B1E2E" strokeWidth={2} isAnimationActive={false}>
+                <Pie data={ranked.map((c) => ({ name: c, value: byCategory[c]! }))} dataKey="value" nameKey="name" outerRadius="70%" label={({ x, y, textAnchor, percent }) => <text x={x} y={y} textAnchor={textAnchor} dominantBaseline="central" fill="#A6ACC4" fontSize={11}>{`${Math.round(percent * 100)}%`}</text>} labelLine={false} stroke="#1B1E2E" strokeWidth={2} isAnimationActive={false}>
                   {ranked.map((c) => <Slice key={c} fill={color(c)} />)}
                 </Pie>
                 <Tooltip

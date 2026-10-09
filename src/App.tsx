@@ -119,6 +119,8 @@ function Dashboard({ ledger, rows }: { ledger: Ledger; rows: MonthRow[] }) {
   const summary = summarize(rows);
   const byCategory = categoryTotals(rows, categories);
   const ranked = [...categories].sort((a, b) => byCategory[b]! - byCategory[a]!);
+  const [hot, setHot] = useState<string | null>(null);
+  const dim = (c: string) => (hot && hot !== c ? 0.3 : 1);
 
   return (
     <>
@@ -151,10 +153,10 @@ function Dashboard({ ledger, rows }: { ledger: Ledger; rows: MonthRow[] }) {
                   wrapperStyle={{ fontSize: 11.5 }}
                   iconType="square"
                   iconSize={8}
-                  formatter={(name: string) => <span style={{ color: '#A6ACC4' }}>{name}</span>}
+                  formatter={(name: string) => <span style={{ color: hot === name ? '#F5F6FA' : '#A6ACC4', fontWeight: hot === name ? 700 : 400, opacity: name === 'Rent' ? 1 : dim(name) }}>{name}</span>}
                 />
                 {categories.map((c) => (
-                  <Bar key={c} dataKey={(r: MonthRow) => r.expenses[c]} name={c} stackId="expenses" fill={color(c)} stroke="#1B1E2E" strokeWidth={1} maxBarSize={36} isAnimationActive={false} />
+                  <Bar key={c} dataKey={(r: MonthRow) => r.expenses[c]} name={c} stackId="expenses" fill={color(c)} stroke="#1B1E2E" strokeWidth={1} maxBarSize={36} isAnimationActive={false} fillOpacity={dim(c)} onMouseEnter={() => setHot(c)} onMouseLeave={() => setHot(null)} />
                 ))}
                 <Line dataKey="rent" name="Rent" stroke={RENT_COLOR} strokeWidth={2} dot={{ r: 3, fill: RENT_COLOR }} type="linear" isAnimationActive={false} />
               </ComposedChart>
@@ -173,7 +175,7 @@ function Dashboard({ ledger, rows }: { ledger: Ledger; rows: MonthRow[] }) {
                   const a = (-midAngle * Math.PI) / 180;
                   return <text x={cx + 0.6 * outerRadius * Math.cos(a)} y={cy + 0.6 * outerRadius * Math.sin(a)} textAnchor="middle" dominantBaseline="central" fill="#fff" fontSize={12} fontWeight={600}>{`${Math.round(percent * 100)}%`}</text>;
                 }} labelLine={false} stroke="#1B1E2E" strokeWidth={2} isAnimationActive={false}>
-                  {ranked.map((c) => <Slice key={c} fill={color(c)} />)}
+                  {ranked.map((c) => <Slice key={c} fill={color(c)} fillOpacity={dim(c)} onMouseEnter={() => setHot(c)} onMouseLeave={() => setHot(null)} />)}
                 </Pie>
                 <Tooltip
                   contentStyle={{ background: '#1A1D2E', border: '1px solid #2A2E45', borderRadius: 10, fontSize: 12 }}
@@ -185,7 +187,7 @@ function Dashboard({ ledger, rows }: { ledger: Ledger; rows: MonthRow[] }) {
           </div>
           <ul className="share-list">
             {ranked.map((c) => (
-              <li key={c}>
+              <li key={c} style={{ opacity: dim(c), fontWeight: hot === c ? 700 : undefined }}>
                 <div className="share-head">
                   <span className="share-label"><span className="dot" style={{ background: color(c) }} />{c}</span>
                   <span>
